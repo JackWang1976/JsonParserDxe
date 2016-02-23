@@ -2,7 +2,7 @@
  Parson ( http://kgabis.github.com/parson/ )
  Copyright (c) 2012 - 2016 Krzysztof Gabis
  
- Permission is hereby granted, free of charge, to any person obtaining a copy
+ Permission is hereby granted, free of CHAR8ge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
@@ -55,20 +55,22 @@ typedef enum json_value_type {
     JSONBoolean = 6
 };
 
-typedef int JSON_Value_Type;
+typedef INTN JSON_Value_Type;
+
     
 typedef enum json_result_t {
     JSONSuccess = 0,
     JSONFailure = 0xff
 };
-typedef int JSON_Status;
+
+typedef INTN JSON_Status;
     
 typedef VOID * (*JSON_Malloc_Function)(SIZE_T);
 typedef VOID   (*JSON_Free_Function)(void *);
 
 /* Call only once, before calling any other function from parson API. If not called, malloc and free
    from stdlib will be used for all allocations */
-void json_set_allocation_functions(JSON_Malloc_Function malloc_fun, JSON_Free_Function free_fun);
+void Json_Set_Allocation_Functions(JSON_Malloc_Function malloc_fun, JSON_Free_Function free_fun);
     
 /* Parses first JSON value in a file, returns NULL in case of error */
 JSON_Value * Json_Parse_File(CONST CHAR8 *Filename);
@@ -78,28 +80,28 @@ JSON_Value * Json_Parse_File(CONST CHAR8 *Filename);
 JSON_Value * Json_Parse_File_With_Comments(CONST CHAR8 *Filename);
     
 /*  Parses first JSON value in a string, returns NULL in case of error */
-JSON_Value * json_parse_string(const char *string);
+JSON_Value * Json_Parse_String(CONST CHAR8 *string);
 
 /*  Parses first JSON value in a string and ignores comments (/ * * / and //),
     returns NULL in case of error */
-JSON_Value * json_parse_string_with_comments(const char *string);
+JSON_Value * json_parse_string_with_comments(CONST CHAR8 *string);
     
 /* Serialization */
-SIZE_T      json_serialization_size(const JSON_Value *value); /* returns 0 on fail */
-JSON_Status json_serialize_to_buffer(const JSON_Value *value, char *buf, size_t buf_size_in_bytes);
-JSON_Status json_serialize_to_file(const JSON_Value *value, const char *filename);
-CHAR8 *      json_serialize_to_string(const JSON_Value *value);
+SIZE_T      json_serialization_size(CONST JSON_Value *value); /* returns 0 on fail */
+JSON_Status json_serialize_to_buffer(CONST JSON_Value *value, CHAR8 *buf, SIZE_T buf_size_in_bytes);
+JSON_Status json_serialize_to_file(CONST JSON_Value *value, CONST CHAR8 *filename);
+CHAR8 *      json_serialize_to_string(CONST JSON_Value *value);
 
 /* Pretty serialization */
-SIZE_T      json_serialization_size_pretty(const JSON_Value *value); /* returns 0 on fail */
-JSON_Status json_serialize_to_buffer_pretty(const JSON_Value *value, char *buf, size_t buf_size_in_bytes);
-JSON_Status json_serialize_to_file_pretty(const JSON_Value *value, const char *filename);
-CHAR8 *      json_serialize_to_string_pretty(const JSON_Value *value);
+SIZE_T      json_serialization_size_pretty(CONST JSON_Value *value); /* returns 0 on fail */
+JSON_Status json_serialize_to_buffer_pretty(CONST JSON_Value *value, CHAR8 *buf, SIZE_T buf_size_in_bytes);
+JSON_Status json_serialize_to_file_pretty(CONST JSON_Value *value, CONST CHAR8 *filename);
+CHAR8 *      json_serialize_to_string_pretty(CONST JSON_Value *value);
 
-void        json_free_serialized_string(char *string); /* frees string from json_serialize_to_string and json_serialize_to_string_pretty */
+void        json_free_serialized_string(CHAR8 *string); /* frees string from json_serialize_to_string and json_serialize_to_string_pretty */
 
 /* Comparing */
-INTN  json_value_equals(const JSON_Value *a, const JSON_Value *b);
+INTN  json_value_equals(CONST JSON_Value *a, CONST JSON_Value *b);
     
 /* Validation
    This is *NOT* JSON Schema. It validates json by checking if object have identically 
@@ -111,7 +113,7 @@ INTN  json_value_equals(const JSON_Value *a, const JSON_Value *b);
    Empty objects ({}) validate all objects, empty arrays ([]) validate all arrays,
    null validates values of every type.
  */
-JSON_Status json_validate(const JSON_Value *schema, const JSON_Value *value);
+JSON_Status json_validate(CONST JSON_Value *schema, CONST JSON_Value *value);
     
 /*
  * JSON Object
@@ -238,24 +240,24 @@ JSON_STATUS
 
 
 
-JSON_Status json_object_set_string(JSON_Object *object, const char *name, const char *string);
-JSON_Status json_object_set_number(JSON_Object *object, const char *name, double number);
-JSON_Status json_object_set_boolean(JSON_Object *object, const char *name, int boolean);
-JSON_Status json_object_set_null(JSON_Object *object, const char *name);
+JSON_Status json_object_set_string(JSON_Object *object, CONST CHAR8 *name, CONST CHAR8 *string);
+JSON_Status json_object_set_number(JSON_Object *object, CONST CHAR8 *name, double number);
+JSON_Status json_object_set_boolean(JSON_Object *object, CONST CHAR8 *name, INTNboolean);
+JSON_Status json_object_set_null(JSON_Object *object, CONST CHAR8 *name);
 
 /* Works like dotget functions, but creates whole hierarchy if necessary.
  * json_object_dotset_value does not copy passed value so it shouldn't be freed afterwards. */
-JSON_Status json_object_dotset_value(JSON_Object *object, const char *name, JSON_Value *value);
-JSON_Status json_object_dotset_string(JSON_Object *object, const char *name, const char *string);
-JSON_Status json_object_dotset_number(JSON_Object *object, const char *name, double number);
-JSON_Status json_object_dotset_boolean(JSON_Object *object, const char *name, int boolean);
-JSON_Status json_object_dotset_null(JSON_Object *object, const char *name);
+JSON_Status json_object_dotset_value(JSON_Object *object, CONST CHAR8 *name, JSON_Value *value);
+JSON_Status json_object_dotset_string(JSON_Object *object, CONST CHAR8 *name, CONST CHAR8 *string);
+JSON_Status json_object_dotset_number(JSON_Object *object, CONST CHAR8 *name, double number);
+JSON_Status json_object_dotset_boolean(JSON_Object *object, CONST CHAR8 *name, INTNboolean);
+JSON_Status json_object_dotset_null(JSON_Object *object, CONST CHAR8 *name);
 
 /* Frees and removes name-value pair */
-JSON_Status json_object_remove(JSON_Object *object, const char *name);
+JSON_Status json_object_remove(JSON_Object *object, CONST CHAR8 *name);
 
 /* Works like dotget function, but removes name-value pair only on exact match. */
-JSON_Status json_object_dotremove(JSON_Object *object, const char *key);
+JSON_Status json_object_dotremove(JSON_Object *object, CONST CHAR8 *key);
 
 /* Removes all name-value pairs in object */
 JSON_Status json_object_clear(JSON_Object *object);
@@ -263,26 +265,26 @@ JSON_Status json_object_clear(JSON_Object *object);
 /* 
  *JSON Array 
  */
-JSON_Value  * json_array_get_value  (const JSON_Array *array, size_t index);
-const char  * json_array_get_string (const JSON_Array *array, size_t index);
-JSON_Object * json_array_get_object (const JSON_Array *array, size_t index);
-JSON_Array  * json_array_get_array  (const JSON_Array *array, size_t index);
-double        json_array_get_number (const JSON_Array *array, size_t index); /* returns 0 on fail */
-int           json_array_get_boolean(const JSON_Array *array, size_t index); /* returns -1 on fail */
-size_t        json_array_get_count  (const JSON_Array *array);
+JSON_Value  * json_array_get_value  (CONST JSON_Array *array, SIZE_T index);
+CONST CHAR8  * json_array_get_string (CONST JSON_Array *array, SIZE_T index);
+JSON_Object * json_array_get_object (CONST JSON_Array *array, SIZE_T index);
+JSON_Array  * json_array_get_array  (CONST JSON_Array *array, SIZE_T index);
+double        json_array_get_number (CONST JSON_Array *array, SIZE_T index); /* returns 0 on fail */
+INTN          json_array_get_boolean(CONST JSON_Array *array, SIZE_T index); /* returns -1 on fail */
+SIZE_T        json_array_get_count  (CONST JSON_Array *array);
     
 /* Frees and removes value at given index, does nothing and returns JSONFailure if index doesn't exist.
  * Order of values in array may change during execution.  */
-JSON_Status json_array_remove(JSON_Array *array, size_t i);
+JSON_Status json_array_remove(JSON_Array *array, SIZE_T i);
 
 /* Frees and removes from array value at given index and replaces it with given one.
  * Does nothing and returns JSONFailure if index doesn't exist. 
  * json_array_replace_value does not copy passed value so it shouldn't be freed afterwards. */
-JSON_Status json_array_replace_value(JSON_Array *array, size_t i, JSON_Value *value);
-JSON_Status json_array_replace_string(JSON_Array *array, size_t i, const char* string);
-JSON_Status json_array_replace_number(JSON_Array *array, size_t i, double number);
-JSON_Status json_array_replace_boolean(JSON_Array *array, size_t i, int boolean);
-JSON_Status json_array_replace_null(JSON_Array *array, size_t i);
+JSON_Status json_array_replace_value(JSON_Array *array, SIZE_T i, JSON_Value *value);
+JSON_Status json_array_replace_string(JSON_Array *array, SIZE_T i, CONST CHAR8* string);
+JSON_Status json_array_replace_number(JSON_Array *array, SIZE_T i, double number);
+JSON_Status json_array_replace_boolean(JSON_Array *array, SIZE_T i, INTNboolean);
+JSON_Status json_array_replace_null(JSON_Array *array, SIZE_T i);
 
 /* Frees and removes all values from array */
 JSON_Status json_array_clear(JSON_Array *array);
@@ -290,9 +292,9 @@ JSON_Status json_array_clear(JSON_Array *array);
 /* Appends new value at the end of array.
  * json_array_append_value does not copy passed value so it shouldn't be freed afterwards. */
 JSON_Status json_array_append_value(JSON_Array *array, JSON_Value *value);
-JSON_Status json_array_append_string(JSON_Array *array, const char *string);
+JSON_Status json_array_append_string(JSON_Array *array, CONST CHAR8 *string);
 JSON_Status json_array_append_number(JSON_Array *array, double number);
-JSON_Status json_array_append_boolean(JSON_Array *array, int boolean);
+JSON_Status json_array_append_boolean(JSON_Array *array, INTNboolean);
 JSON_Status json_array_append_null(JSON_Array *array);
     
 /*
@@ -300,27 +302,27 @@ JSON_Status json_array_append_null(JSON_Array *array);
  */
 JSON_Value * json_value_init_object (void);
 JSON_Value * json_value_init_array  (void);
-JSON_Value * json_value_init_string (const char *string); /* copies passed string */
+JSON_Value * json_value_init_string (CONST CHAR8 *string); /* copies passed string */
 JSON_Value * json_value_init_number (double number);
-JSON_Value * json_value_init_boolean(int boolean);
+JSON_Value * json_value_init_boolean(INTNboolean);
 JSON_Value * json_value_init_null   (void);
-JSON_Value * json_value_deep_copy   (const JSON_Value *value);
+JSON_Value * json_value_deep_copy   (CONST JSON_Value *value);
 void         json_value_free        (JSON_Value *value);
 
-JSON_Value_Type json_value_get_type   (const JSON_Value *value);
-JSON_Object *   json_value_get_object (const JSON_Value *value);
-JSON_Array  *   json_value_get_array  (const JSON_Value *value);
-const char  *   json_value_get_string (const JSON_Value *value);
-double          json_value_get_number (const JSON_Value *value);
-int             json_value_get_boolean(const JSON_Value *value);
+JSON_Value_Type json_value_get_type   (CONST JSON_Value *value);
+JSON_Object *   json_value_get_object (CONST JSON_Value *value);
+JSON_Array  *   json_value_get_array  (CONST JSON_Value *value);
+CONST CHAR8  *   json_value_get_string (CONST JSON_Value *value);
+double          json_value_get_number (CONST JSON_Value *value);
+INTN            json_value_get_boolean(CONST JSON_Value *value);
 
 /* Same as above, but shorter */
-JSON_Value_Type json_type   (const JSON_Value *value);
-JSON_Object *   json_object (const JSON_Value *value);
-JSON_Array  *   json_array  (const JSON_Value *value);
-const char  *   json_string (const JSON_Value *value);
-double          json_number (const JSON_Value *value);
-int             json_boolean(const JSON_Value *value);
+JSON_Value_Type json_type   (CONST JSON_Value *value);
+JSON_Object *   json_object (CONST JSON_Value *value);
+JSON_Array  *   json_array  (CONST JSON_Value *value);
+CONST CHAR8  *   json_string (CONST JSON_Value *value);
+double          json_number (CONST JSON_Value *value);
+INTN            json_boolean(CONST JSON_Value *value);
     
 #ifdef __cplusplus
 }
