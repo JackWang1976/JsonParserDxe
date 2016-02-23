@@ -1,0 +1,44 @@
+## @file
+#
+#    Component description file for JSON Data parser.
+#
+# Copyright (c) 2016, Dell Inc.  All rights reserved.
+#
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = JsonParserDxe
+  FILE_GUID                      = FBA75A95-B6EB-480B-8C0D-61AFAF8F459D
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = JsonParserEntryPoint
+
+[Sources]
+  JsonParserDxe.c
+  JsonParserDxe.h
+
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  UefiLib
+  BaseLib
+
+
+[Guids]
+
+[Protocols]
+  gJsonParserProtocolGuid                  # PRODUCES
+
+
+[Depex]
+  TRUE
+
+[BuildOptions]
+  # Generate a .cod file
+  MSFT:*_*_X64_CC_FLAGS = /FAcs
