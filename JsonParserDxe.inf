@@ -42,4 +42,6 @@
 
 [BuildOptions]
   # Generate a .cod file
-  MSFT:*_*_X64_CC_FLAGS = /FAcs
+  MSFT:*_*_*_CC_FLAGS = /W0 /Od
+
+
