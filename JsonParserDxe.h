@@ -11,6 +11,10 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/PrintLib.h>
+#include <Library/UefiBootServicesTableLib.h>
+#include <Library/DebugLib.h>
+
+
 //#include <math.h>
 
 
@@ -104,18 +108,23 @@ UINTN EFIAPI AsciiStringLength (IN CONST CHAR8 *String)
    from stdlib will be used for all allocations */
 void json_set_allocation_functions(JSON_Malloc_Function malloc_fun, JSON_Free_Function free_fun);
     
-/* Parses first JSON value in a file, returns NULL in case of error */
-JSON_Value * json_parse_file(const CHAR8*filename);
+///* Parses first JSON value in a file, returns NULL in case of error */
+//JSON_Value * json_parse_file(const CHAR8*filename);
+JSON_Value * 
+json_parse_file( 
+  const CHAR8 *filename
+  );
 
-/* Parses first JSON value in a file and ignores comments (/ * * / and //),
-   returns NULL in case of error */
-JSON_Value * json_parse_file_with_comments(const CHAR8*filename);
-    
-/*  Parses first JSON value in a string, returns NULL in case of error */
-JSON_Value * json_parse_string(const CHAR8*string);
-
-/*  Parses first JSON value in a string and ignores comments (/ * * / and //),
-    returns NULL in case of error */
+//
+///* Parses first JSON value in a file and ignores comments (/ * * / and //),
+//   returns NULL in case of error */
+//JSON_Value * json_parse_file_with_comments(const CHAR8*filename);
+//
+///*  Parses first JSON value in a string, returns NULL in case of error */
+JSON_Value * json_parse_string(const CHAR8 *string);
+//
+///*  Parses first JSON value in a string and ignores comments (/ * * / and //),
+//    returns NULL in case of error */
 JSON_Value * json_parse_string_with_comments(const CHAR8*string);
     
 /* Serialization */

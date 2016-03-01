@@ -18,6 +18,9 @@
   JsonParserDxe.c
   JsonParserDxe.h
 
+[Sources.Ia32]
+  llmul.asm
+
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -42,6 +45,6 @@
 
 [BuildOptions]
   # Generate a .cod file
-  MSFT:*_*_*_CC_FLAGS = /W0 /Od
+  MSFT:*_*_*_CC_FLAGS = /W0 /Od # /W0
 
 

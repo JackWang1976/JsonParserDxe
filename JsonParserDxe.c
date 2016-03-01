@@ -35,6 +35,9 @@
 //define in base.h #define MAX(a, b)             ((a) > (b) ? (a) : (b))
 
 
+INTN _fltused;
+
+
 static JSON_Malloc_Function parson_malloc = malloc;
 static JSON_Free_Function parson_free = free;
 
@@ -1842,6 +1845,15 @@ void json_set_allocation_functions(JSON_Malloc_Function malloc_fun, JSON_Free_Fu
     parson_free = free_fun;
 }
 
+UINT32
+EFIAPI
+GetVersion (
+    VOID
+  )
+{
+  return (UINT32) DELL_JSON_PARSER_PROTOCOL_VERSION;
+}
+
 EFI_STATUS
 EFIAPI
 JsonParserEntryPoint (
@@ -1851,7 +1863,33 @@ JsonParserEntryPoint (
       /**<[in] Pointer to the System Table.*/
   )
 {
-  EFI_STATUS  Status = EFI_SUCCESS;
+  EFI_STATUS         Status = EFI_SUCCESS;
+  JSON_PARSER_PROTOCOL   pJsonProtocol;
+
+
+  //
+  // Make sure the Protocol is already installed in the system
+  //
+  ASSERT_PROTOCOL_ALREADY_INSTALLED (NULL, &gJsonParserProtocolGuid);
+
+  //
+  // Initialize the interfaces.
+  //
+  pJsonProtocol.get_version = GetVersion;
+  pJsonProtocol.json_parse_file = json_parse_file;
+  pJsonProtocol.json_parse_file_with_comments = json_parse_file_with_comments;
+  pJsonProtocol.json_parse_string = json_parse_string;
+  pJsonProtocol.json_parse_string_with_comments = json_parse_string_with_comments;
+
+  //
+  // Install protocol interface
+  //
+  Status = gBS->InstallProtocolInterface (
+                  NULL,
+                  &gJsonParserProtocolGuid,
+                  EFI_NATIVE_INTERFACE,
+                  &pJsonProtocol
+                  );
 
 
   return Status;
