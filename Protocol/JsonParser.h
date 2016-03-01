@@ -25,12 +25,13 @@
 #define __JSON_PARSER_H__
 
   
- 
+ // The version of the protocol installed by the driver.
+#define DELL_JSON_PARSER_PROTOCOL_VERSION 0x01000000
  
 #define JSON_PARSER_PROTOCOL_GUID \
 { 0x462C5BBA, 0x2F3D, 0x4BDD, { 0xBC, 0x37, 0x6A, 0x1A, 0xED, 0x3D, 0xDE, 0x79 }}
 
-extern EFI_GUID gJsonParserProtocolGuid;
+//extern EFI_GUID gJsonParserProtocolGuid;
 
 
 // *****************************************************************************
@@ -67,6 +68,46 @@ typedef INTN JSON_Status;
     
 typedef VOID * (*JSON_Malloc_Function)(SIZE_T);
 typedef VOID   (*JSON_Free_Function)(void *);
+
+
+typedef
+UINT32
+(EFIAPI *JSON_PARSER_GET_VERSION)(
+  VOID
+);
+
+
+/* Parses first JSON value in a file, returns NULL in case of error */
+typedef
+JSON_Value *
+(EFIAPI *DELL_JSON_PARSE_FILE)(
+  const CHAR8 *filename
+);
+
+/* Parses first JSON value in a file and ignores comments (/ * * / and //),
+   returns NULL in case of error */
+typedef
+JSON_Value *
+(EFIAPI *JSON_PARSE_FILE_WITH_COMMENTS)(
+  const CHAR8 *filename
+);
+    
+/*  Parses first JSON value in a string, returns NULL in case of error */
+typedef
+JSON_Value *
+(EFIAPI *JSON_PARSE_STRING)(
+  const CHAR8 *string
+);
+
+/*  Parses first JSON value in a string and ignores comments (/ * * / and //),
+    returns NULL in case of error */
+typedef
+JSON_Value *
+(EFIAPI *JSON_PARSE_STRING_WITH_COMMENTS)(
+  const CHAR8 *string
+);
+
+
 
 
 /*
@@ -175,7 +216,7 @@ SIZE_T
   
 typedef
 CONST CHAR8 *
-(EFIAPI *JSON_OBJECT_GET_Name)(
+(EFIAPI *JSON_OBJECT_GET_NAME)(
   CONST JSON_Object *Object,
   SIZE_T Index
   );
@@ -194,7 +235,7 @@ JSON_Status
 
 typedef
 JSON_Status
-(EFIAPI *Json_OBJECT_SET_STRING)(
+(EFIAPI *JSON_OBJECT_SET_STRING)(
   JSON_Object *Object, 
   CONST CHAR8 *Name,
   CONST CHAR8 *String
@@ -202,7 +243,7 @@ JSON_Status
 
 typedef
 JSON_Status
-(EFIAPI *Json_OBJECT_SET_NUMBER)(
+(EFIAPI *JSON_OBJECT_SET_NUMBER)(
   JSON_Object *Object,
   CONST CHAR8 *Name,
   double Number
@@ -211,7 +252,7 @@ JSON_Status
 //check.
 typedef
 JSON_Status
-(EFIAPI *Json_OBJECT_SET_BOOLEAN)(
+(EFIAPI *JSON_OBJECT_SET_BOOLEAN)(
   JSON_Object *Object,
   CONST CHAR8 *Name,
   INTN  Boolean
@@ -220,7 +261,7 @@ JSON_Status
 
 typedef
 JSON_Status
-(EFIAPI *Json_OBJECT_SET_NULL)(
+(EFIAPI *JSON_OBJECT_SET_NULL)(
   JSON_Object *Object,
   CONST CHAR8 *Name
   );
@@ -229,7 +270,7 @@ JSON_Status
  * Json_Object_Dotset_value does not copy passed value so it shouldn't be freed afterwards. */
 typedef
 JSON_Status
-(EFIAPI *JSON_OBJECT_DOTEST_Value)(
+(EFIAPI *JSON_OBJECT_DOTSET_VALUE)(
   JSON_Object *Object,
   CONST CHAR8 *Name,
   JSON_Value *Value
@@ -237,30 +278,28 @@ JSON_Status
 
 typedef
 JSON_Status
-(EFIAPI *JSON_OBJECT_DOTEST_String)(
+(EFIAPI *JSON_OBJECT_DOTSET_STRING)(
   JSON_Object *Object,
   CONST CHAR8 *Name,
   CONST CHAR8 *String);
 
 typedef
 JSON_Status
-(EFIAPI *JSON_OBJECT_DOTEST_Number)(
+(EFIAPI *JSON_OBJECT_DOTSET_NUMBER)(
   JSON_Object *Object,
   CONST CHAR8 *Name,
   double Number);
 
 typedef
 JSON_Status
-(EFIAPI *JSON_OBJECT_DOTEST_Boolean)(
+(EFIAPI *JSON_OBJECT_DOTSET_BOOLEAN)(
   JSON_Object *Object,
   CONST CHAR8 *Name,
   INTN  Boolean);
 
-
-
 typedef
 JSON_Status
-(EFIAPI *JSON_OBJECT_DOTEST_Null)(
+(EFIAPI *JSON_OBJECT_DOTSET_NULL)(
   JSON_Object *Object,
   CONST CHAR8 *Name);
 
@@ -287,13 +326,45 @@ JSON_Status
 /* 
  *JSON Array 
  */
-JSON_Value  * JSON_ARRAY_GET_VALUE  (CONST JSON_Array *Array, SIZE_T index);
-CONST CHAR8  * JSON_ARRAY_GET_STRING (CONST JSON_Array *Array, SIZE_T index);
-JSON_Object * JSON_ARRAY_GET_OBJECT (CONST JSON_Array *Array, SIZE_T index);
-JSON_Array  * JSON_ARRAY_GET_ARRAY  (CONST JSON_Array *Array, SIZE_T index);
-double        JSON_ARRAY_GET_NUMBER (CONST JSON_Array *Array, SIZE_T index); /* returns 0 on fail */
-INTN          JSON_ARRAY_GET_BOOLEAN(CONST JSON_Array *Array, SIZE_T index); /* returns -1 on fail */
-SIZE_T        JSON_ARRAY_GET_COUNT  (CONST JSON_Array *Array);
+typedef
+JSON_Value  * 
+(EFIAPI *JSON_ARRAY_GET_VALUE)(
+  CONST JSON_Array *Array,
+  SIZE_T index);
+
+typedef
+CONST CHAR8  * 
+(EFIAPI *JSON_ARRAY_GET_STRING)(
+  CONST JSON_Array *Array,
+  SIZE_T index);
+
+typedef
+JSON_Object * 
+(EFIAPI *JSON_ARRAY_GET_OBJECT)(
+  CONST JSON_Array *Array,
+  SIZE_T index);
+typedef
+JSON_Array  * 
+(EFIAPI *JSON_ARRAY_GET_ARRAY)(
+  CONST JSON_Array *Array,
+  SIZE_T index);
+
+typedef
+INTN        
+(EFIAPI *JSON_ARRAY_GET_NUMBER)(
+  CONST JSON_Array *Array,
+  SIZE_T index); /* returns 0 on fail */
+
+typedef
+INTN          
+(EFIAPI *JSON_ARRAY_GET_BOOLEAN)(
+  CONST JSON_Array *Array,
+  SIZE_T index); /* returns -1 on fail */
+
+typedef
+SIZE_T
+(EFIAPI *JSON_ARRAY_GET_COUNT)(
+  CONST JSON_Array *Array);
     
 /* Frees and removes value at given index, does nothing and returns JSONFailure if index doesn't exist.
  * Order of values in Array may change during execution.  */
@@ -331,12 +402,35 @@ JSON_Value * JSON_VALUE_INIT_NULL   (void);
 JSON_Value * JSON_VALUE_DEEP_COPY   (CONST JSON_Value *value);
 void         JSON_vALUE_FREE        (JSON_Value *value);
 
-JSON_Value_Type JSON_VALUE_GET_TYPE   (CONST JSON_Value *value);
-JSON_Object *   JSON_VALUE_GET_OBJECT (CONST JSON_Value *value);
-JSON_Array  *   JSON_VALUE_GET_ARRAY  (CONST JSON_Value *value);
-CONST CHAR8  *   JSON_VALUE_GET_STRING (CONST JSON_Value *value);
-double          JSON_VALUE_GET_NUMBER (CONST JSON_Value *value);
-INTN            JSON_VALUE_GET_BOOLEAN(CONST JSON_Value *value);
+typedef
+JSON_Value_Type 
+(EFIAPI *JSON_VALUE_GET_TYPE)(
+  CONST JSON_Value *value);
+
+typedef
+JSON_Object *
+(EFIAPI *JSON_VALUE_GET_OBJECT)(
+  CONST JSON_Value *value);
+
+typedef
+JSON_Array  *
+(EFIAPI *JSON_VALUE_GET_ARRAY)(
+  CONST JSON_Value *value);
+
+typedef
+CONST CHAR8  *
+(EFIAPI *JSON_VALUE_GET_STRING)(
+  CONST JSON_Value *value);
+
+typedef
+INTN          
+(EFIAPI *JSON_VALUE_GET_NUMBER)(
+  CONST JSON_Value *value);
+
+typedef
+INTN 
+(EFIAPI *JSON_VALUE_GET_BOOLEAN)(
+  CONST JSON_Value *value);
 
 /* Same as above, but shorter */
 JSON_Value_Type JSON_TYPE   (CONST JSON_Value *value);
@@ -346,5 +440,73 @@ CONST CHAR8  *   JSON_STRING (CONST JSON_Value *value);
 double          JSON_NUMBER (CONST JSON_Value *value);
 INTN            JSON_BOOLEAN(CONST JSON_Value *value);
     
+
+
+
+// *****************************************************************************
+// JSON Parser protocol interface definition
+// *****************************************************************************
+//typedef 
+struct _JSON_PARSER_PROTOCOL {
+  // Getters and setters
+  JSON_PARSER_GET_VERSION         get_version;
+  DELL_JSON_PARSE_FILE            json_parse_file;
+  JSON_PARSE_FILE_WITH_COMMENTS   json_parse_file_with_comments;
+  JSON_PARSE_STRING               json_parse_string;
+  JSON_PARSE_STRING_WITH_COMMENTS json_parse_string_with_comments;
+
+  JSON_OBJECT_GET_VALUE json_object_get_value;
+  JSON_OBJECT_GET_STRING json_object_get_string;
+  JSON_OBJECT_GET_OBJECT json_object_get_object;
+  JSON_OBJECT_GET_ARRAY json_object_get_array;
+  JSON_OBJECT_GET_NUMBER json_object_get_number;
+  JSON_OBJECT_GET_BOOLEAN json_object_get_boolean;
+
+  JSON_OBJECT_DOTGET_VALUE json_object_dotget_value;
+  JSON_OBJECT_DOTGET_STRING json_object_dotget_string;
+  JSON_OBJECT_DOTGET_OBJECT json_object_dotget_object;
+  JSON_OBJECT_DOTGET_ARRAY json_object_dotget_array;
+  JSON_OBJECT_DOTGET_NUMBER json_object_dotget_number;
+  JSON_OBJECT_DOTGET_BOOLEAN json_object_dotget_boolean;
+
+  JSON_OBJECT_GET_COUNT json_object_get_count;
+  JSON_OBJECT_GET_NAME json_object_get_name;
+
+  JSON_ARRAY_GET_VALUE json_array_get_value;
+  JSON_ARRAY_GET_STRING json_array_get_string;
+  JSON_ARRAY_GET_OBJECT json_array_get_object;
+  JSON_ARRAY_GET_ARRAY json_array_get_array;
+  JSON_ARRAY_GET_NUMBER json_array_get_number;
+  JSON_ARRAY_GET_BOOLEAN json_array_get_boolean;
+  JSON_ARRAY_GET_COUNT json_array_get_count;
+
+  JSON_VALUE_GET_TYPE json_value_get_type;
+  JSON_VALUE_GET_OBJECT json_value_get_object;
+  JSON_VALUE_GET_ARRAY json_value_get_array;
+  JSON_VALUE_GET_STRING json_value_get_string;
+  JSON_VALUE_GET_NUMBER json_value_get_number;
+  JSON_VALUE_GET_BOOLEAN json_value_get_boolean;
+  
+  JSON_OBJECT_SET_VALUE json_object_set_value;
+  JSON_OBJECT_SET_STRING json_object_set_string;
+  JSON_OBJECT_SET_NUMBER json_object_set_number;
+  JSON_OBJECT_SET_BOOLEAN json_object_set_boolean;
+  JSON_OBJECT_SET_NULL json_object_set_null;
+
+  JSON_OBJECT_DOTSET_VALUE json_object_dotset_value;
+  JSON_OBJECT_DOTSET_STRING json_object_dotset_string;
+  JSON_OBJECT_DOTSET_NUMBER json_object_dotset_number;
+  JSON_OBJECT_DOTSET_BOOLEAN json_object_dotset_boolean;
+  JSON_OBJECT_DOTSET_NULL json_object_dotset_null;
+  
+  JSON_OBJECT_REMOVE json_object_remove;
+  JSON_OBJECT_DOTREMOVE json_object_dotremove;
+
+
+};
+
+extern EFI_GUID gJsonParserProtocolGuid;
+
+//extern EFI_GUID gDellEfiJsonProtocolGuid;
 
 #endif

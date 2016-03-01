@@ -18,8 +18,8 @@
   JsonParserDxe.c
   JsonParserDxe.h
 
-[Sources.Ia32]
-  llmul.asm
+#[Sources.Ia32]
+#  llmul.asm
 
 
 [Packages]

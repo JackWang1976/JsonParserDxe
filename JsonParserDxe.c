@@ -27,7 +27,8 @@
 #define ARRAY_MAX_CAPACITY    122880 /* 15*(2^13) */
 #define OBJECT_MAX_CAPACITY      960 /* 15*(2^6)  */
 #define MAX_NESTING               19
-#define DOUBLE_SERIALIZATION_FORMAT "%f"
+//_Dell_ didn;t suppport double in EFI 
+//_Dell_ #define DOUBLE_SERIALIZATION_FORMAT "%f"
 
 #define SIZEOF_TOKEN(a)       (sizeof(a) - 1)
 #define SKIP_CHAR(str)        ((*str)++)
@@ -35,7 +36,7 @@
 //define in base.h #define MAX(a, b)             ((a) > (b) ? (a) : (b))
 
 
-INTN _fltused;
+//INTN _fltused;
 
 
 static JSON_Malloc_Function parson_malloc = malloc;
@@ -46,7 +47,7 @@ static JSON_Free_Function parson_free = free;
 /* Type definitions */
 typedef union Json_Value_Value {
     CHAR8        *string;
-    double       number;
+    INTN       number;
     JSON_Object *object;
     JSON_Array  *array;
     INTN          boolean;
@@ -119,8 +120,8 @@ static INTN    append_string(CHAR8 *buf, const CHAR8 *string);
 
 /* Various */
 
-double
-fabs(double x)
+INTN
+fabs(INTN x)
 {
   UINT32 high;
   GET_HIGH_WORD(high,x);
@@ -283,7 +284,8 @@ read_file(
   const CHAR8 * filename
   )
 {
-#if 0
+#if 0 //_Dell_ add
+
   FILE *fp = fopen(filename, "r");
   SIZE_T file_size;
   long pos;
@@ -314,6 +316,9 @@ read_file(
   file_contents[file_size] = '\0';
   return file_contents;
 #else
+  // Open the file.
+  //Status = ShellOpenFileByName(FName, &FileHandle, EFI_FILE_MODE_READ, 0);
+
   CHAR8 *file_contents = NULL;
   return file_contents;
 #endif
@@ -518,8 +523,9 @@ static void skip_quotes(const CHAR8 **string) {
     SKIP_CHAR(string);
 }
 
+
 static INTN parse_utf_16(const CHAR8 **unprocessed, CHAR8 **processed) {
-#if 0
+#if 0 //_Dell_
     UINTN cp, lead, trail;
     CHAR8 *processed_ptr = *processed;
     CONST CHAR8 *unprocessed_ptr = *unprocessed;
@@ -799,7 +805,7 @@ static INTN json_serialize_to_buffer_r(const JSON_Value *value, CHAR8 *buf, INTN
     JSON_Array *array = NULL;
     JSON_Object *object = NULL;
     SIZE_T i = 0, count = 0;
-    double num = 0.0;
+    INTN num = 0.0;
     INTN written = -1, written_total = 0;
     
     switch (json_value_get_type(value)) {
@@ -882,10 +888,11 @@ static INTN json_serialize_to_buffer_r(const JSON_Value *value, CHAR8 *buf, INTN
             num = json_value_get_number(value);
             if (buf != NULL)
                 num_buf = buf;
-            if (num == ((double)(int)num)) /*  check if num is integer */
+            //_Dell_ if (num == ((double)(int)num)) /*  check if num is integer */
+            if (num == ((INTN)num)) /*  check if num is integer */
                 written = AsciiSPrint(num_buf, "%d", (int)num);
-            else
-            //Price debug++    written = AsciiSPrint(num_buf, DOUBLE_SERIALIZATION_FORMAT, num);
+            //_Dell_ else
+            //_Dell_    written = AsciiSPrint(num_buf, DOUBLE_SERIALIZATION_FORMAT, num);
             if (written < 0)
                 return -1;
             if (buf != NULL)
@@ -952,7 +959,7 @@ static INTN append_string(CHAR8 *buf, const CHAR8 *string) {
 
 /* Parser API */
 JSON_Value * 
-json_parse_file(
+json_parse_file( 
   const CHAR8 *filename
   )
 {
@@ -1016,7 +1023,7 @@ const CHAR8 * json_object_get_string(const JSON_Object *object, const CHAR8 *nam
     return json_value_get_string(json_object_get_value(object, name));
 }
 
-double json_object_get_number(const JSON_Object *object, const CHAR8 *name) {
+INTN json_object_get_number(const JSON_Object *object, const CHAR8 *name) {
     return json_value_get_number(json_object_get_value(object, name));
 }
 
@@ -1044,7 +1051,7 @@ const CHAR8 * json_object_dotget_string(const JSON_Object *object, const CHAR8 *
     return json_value_get_string(json_object_dotget_value(object, name));
 }
 
-double json_object_dotget_number(const JSON_Object *object, const CHAR8 *name) {
+INTN json_object_dotget_number(const JSON_Object *object, const CHAR8 *name) {
     return json_value_get_number(json_object_dotget_value(object, name));
 }
 
@@ -1081,7 +1088,7 @@ const CHAR8 * json_array_get_string(const JSON_Array *array, SIZE_T index) {
     return json_value_get_string(json_array_get_value(array, index));
 }
 
-double json_array_get_number(const JSON_Array *array, SIZE_T index) {
+INTN json_array_get_number(const JSON_Array *array, SIZE_T index) {
     return json_value_get_number(json_array_get_value(array, index));
 }
 
@@ -1118,7 +1125,7 @@ const CHAR8 * json_value_get_string(const JSON_Value *value) {
     return json_value_get_type(value) == JSONString ? value->value.string : NULL;
 }
 
-double json_value_get_number(const JSON_Value *value) {
+INTN json_value_get_number(const JSON_Value *value) {
     return json_value_get_type(value) == JSONNumber ? value->value.number : 0;
 }
 
@@ -1187,7 +1194,7 @@ JSON_Value * json_value_init_string(const CHAR8 *string) {
     return value;
 }
 
-JSON_Value * json_value_init_number(double number) {
+JSON_Value * json_value_init_number(INTN number) {
     JSON_Value *new_value = (JSON_Value*)parson_malloc(sizeof(JSON_Value));
     if (!new_value)
         return NULL;
@@ -1303,8 +1310,9 @@ JSON_Status json_serialize_to_buffer(const JSON_Value *value, CHAR8 *buf, SIZE_T
     return JSONSuccess;
 }
 
+#if 0//Price debug
 JSON_Status json_serialize_to_file(const JSON_Value *value, const CHAR8 *filename) {
-#if 0
+
     JSON_Status return_code = JSONSuccess;
     FILE *fp = NULL;
     CHAR8 *serialized_string = json_serialize_to_string(value);
@@ -1322,9 +1330,9 @@ JSON_Status json_serialize_to_file(const JSON_Value *value, const CHAR8 *filenam
     }
     json_free_serialized_string(serialized_string);
     return return_code;
-#endif
-    return JSONSuccess;
+
 }
+#endif 
 
 CHAR8 * json_serialize_to_string(const JSON_Value *value) {
     JSON_Status serialization_result = JSONFailure;
@@ -1361,6 +1369,7 @@ JSON_Status json_serialize_to_buffer_pretty(const JSON_Value *value, CHAR8 *buf,
     return JSONSuccess;
 }
 
+#if 0 // Price remove for complier issue.
 JSON_Status json_serialize_to_file_pretty(const JSON_Value *value, const CHAR8 *filename) {
 #if 0
     JSON_Status return_code = JSONSuccess;
@@ -1384,6 +1393,7 @@ JSON_Status json_serialize_to_file_pretty(const JSON_Value *value, const CHAR8 *
     return JSONSuccess;
 #endif
 }
+#endif 
 
 CHAR8 * json_serialize_to_string_pretty(const JSON_Value *value) {
     JSON_Status serialization_result = JSONFailure;
@@ -1446,7 +1456,7 @@ JSON_Status json_array_replace_string(JSON_Array *array, SIZE_T i, const CHAR8* 
     return JSONSuccess;
 }
 
-JSON_Status json_array_replace_number(JSON_Array *array, SIZE_T i, double number) {
+JSON_Status json_array_replace_number(JSON_Array *array, SIZE_T i, INTN number) {
     JSON_Value *value = json_value_init_number(number);
     if (value == NULL)
         return JSONFailure;
@@ -1507,7 +1517,7 @@ JSON_Status json_array_append_string(JSON_Array *array, const CHAR8 *string) {
     return JSONSuccess;
 }
 
-JSON_Status json_array_append_number(JSON_Array *array, double number) {
+JSON_Status json_array_append_number(JSON_Array *array, INTN number) {
     JSON_Value *value = json_value_init_number(number);
     if (value == NULL)
         return JSONFailure;
@@ -1563,7 +1573,7 @@ JSON_Status json_object_set_string(JSON_Object *object, const CHAR8 *name, const
     return json_object_set_value(object, name, json_value_init_string(string));
 }
 
-JSON_Status json_object_set_number(JSON_Object *object, const CHAR8 *name, double number) {
+JSON_Status json_object_set_number(JSON_Object *object, const CHAR8 *name, INTN number) {
     return json_object_set_value(object, name, json_value_init_number(number));
 }
 
@@ -1617,7 +1627,7 @@ JSON_Status json_object_dotset_string(JSON_Object *object, const CHAR8 *name, co
     return JSONSuccess;
 }
 
-JSON_Status json_object_dotset_number(JSON_Object *object, const CHAR8 *name, double number) {
+JSON_Status json_object_dotset_number(JSON_Object *object, const CHAR8 *name, INTN number) {
     JSON_Value *value = json_value_init_number(number);
     if (value == NULL)
         return JSONFailure;
@@ -1832,7 +1842,7 @@ const CHAR8 * json_string (const JSON_Value *value) {
     return json_value_get_string(value);
 }
 
-double json_number (const JSON_Value *value) {
+INTN json_number (const JSON_Value *value) {
     return json_value_get_number(value);
 }
 
