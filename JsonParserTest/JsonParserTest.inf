@@ -1,0 +1,48 @@
+## @file
+#
+#    Dell Json Parser Test Utility
+#
+#  Copyright (c) 2016, Dell Inc. <BR>
+#  All rights reserved.
+#
+##
+
+[defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = EfiJsonTest
+  FILE_GUID                      = 081C1110-835C-4C27-BEC1-5050E2A9127D
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = EfiJsonTestAppEntry
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = X64
+#
+
+[Sources]
+  JsonParserTest.c
+  JsonParserTest.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+  DellPkgs/DellCorePkgs/DellGenericPkg/DellGenericPkg.dec
+  DellPkgs/DellApplicationsPkg/DellApplicationsPkg.dec
+
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+  ShellLib
+  BaseLib
+  DellShellLib
+
+
+[Guids]
+
+
+
+[Protocols]
+
