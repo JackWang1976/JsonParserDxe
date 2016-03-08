@@ -22,6 +22,9 @@
 */
 
 #include "JsonParserDxe.h"
+//#include "stdio.h"
+//#include <Guid/FileInfo.h>
+
 
 #define STARTING_CAPACITY         15
 #define ARRAY_MAX_CAPACITY    122880 /* 15*(2^13) */
@@ -29,6 +32,8 @@
 #define MAX_NESTING               19
 //_Dell_ didn;t suppport double in EFI 
 //_Dell_ #define DOUBLE_SERIALIZATION_FORMAT "%f"
+//INTN _fltused;
+
 
 #define SIZEOF_TOKEN(a)       (sizeof(a) - 1)
 #define SKIP_CHAR(str)        ((*str)++)
@@ -36,7 +41,6 @@
 //define in base.h #define MAX(a, b)             ((a) > (b) ? (a) : (b))
 
 
-//INTN _fltused;
 
 
 static JSON_Malloc_Function parson_malloc = malloc;
@@ -119,6 +123,9 @@ static INTN    append_indent(CHAR8 *buf, INTN level);
 static INTN    append_string(CHAR8 *buf, const CHAR8 *string);
 
 /* Various */
+
+
+
 
 INTN
 fabs(INTN x)
@@ -1874,8 +1881,12 @@ JsonParserEntryPoint (
   )
 {
   EFI_STATUS         Status = EFI_SUCCESS;
+  EFI_HANDLE         Handle = NULL;
   JSON_PARSER_PROTOCOL   pJsonProtocol;
 
+//Price debug++
+  CpuDeadLoop();
+//price debug--
 
   //
   // Make sure the Protocol is already installed in the system
@@ -1886,21 +1897,72 @@ JsonParserEntryPoint (
   // Initialize the interfaces.
   //
   pJsonProtocol.get_version = GetVersion;
-  pJsonProtocol.json_parse_file = json_parse_file;
-  pJsonProtocol.json_parse_file_with_comments = json_parse_file_with_comments;
+//  pJsonProtocol.json_parse_file = json_parse_file;
+//  pJsonProtocol.json_parse_file_with_comments = json_parse_file_with_comments;
   pJsonProtocol.json_parse_string = json_parse_string;
   pJsonProtocol.json_parse_string_with_comments = json_parse_string_with_comments;
+
+
+  pJsonProtocol.json_object_get_value = json_object_get_value;
+  pJsonProtocol.json_object_get_string = json_object_get_string;
+  pJsonProtocol.json_object_get_object = json_object_get_object;
+  pJsonProtocol.json_object_get_array = json_object_get_array;
+  pJsonProtocol.json_object_get_number = json_object_get_number;
+  pJsonProtocol.json_object_get_boolean = json_object_get_boolean;
+
+  pJsonProtocol.json_object_dotget_value = json_object_dotget_value;
+  pJsonProtocol.json_object_dotget_string = json_object_dotget_string;
+  pJsonProtocol.json_object_dotget_object = json_object_dotget_object;
+  pJsonProtocol.json_object_dotget_array = json_object_dotget_array;
+  pJsonProtocol.json_object_dotget_number = json_object_dotget_number;
+  pJsonProtocol.json_object_dotget_boolean = json_object_dotget_boolean;
+
+  pJsonProtocol.json_object_get_count = json_object_get_count;
+  pJsonProtocol.json_object_get_name = json_object_get_name;
+
+  pJsonProtocol.json_array_get_value = json_array_get_value;
+  pJsonProtocol.json_array_get_string = json_array_get_string;
+  pJsonProtocol.json_array_get_object = json_array_get_object;
+  pJsonProtocol.json_array_get_array = json_array_get_array;
+  pJsonProtocol.json_array_get_number = json_array_get_number;
+  pJsonProtocol.json_array_get_boolean = json_array_get_boolean;
+  pJsonProtocol.json_array_get_count = json_array_get_count;
+
+  pJsonProtocol.json_value_get_type = json_value_get_type;
+  pJsonProtocol.json_value_get_object = json_value_get_object;
+  pJsonProtocol.json_value_get_array = json_value_get_array;
+  pJsonProtocol.json_value_get_string = json_value_get_string;
+  pJsonProtocol.json_value_get_number = json_value_get_number;
+  pJsonProtocol.json_value_get_boolean = json_value_get_boolean;
+  
+  pJsonProtocol.json_object_set_value = json_object_set_value;
+  pJsonProtocol.json_object_set_string = json_object_set_string;
+  pJsonProtocol.json_object_set_number = json_object_set_number;
+  pJsonProtocol.json_object_set_boolean = json_object_set_boolean;
+  pJsonProtocol.json_object_set_null = json_object_set_null;
+
+  pJsonProtocol.json_object_dotset_value = json_object_dotset_value;
+  pJsonProtocol.json_object_dotset_string = json_object_dotset_string;
+  pJsonProtocol.json_object_dotset_number = json_object_dotset_number;
+  pJsonProtocol.json_object_dotset_boolean = json_object_dotset_boolean;
+  pJsonProtocol.json_object_dotset_null = json_object_dotset_null;
+  
+  pJsonProtocol.json_object_remove = json_object_remove;
+  pJsonProtocol.json_object_dotremove = json_object_dotremove;
+
+  pJsonProtocol.json_value_free = json_value_free;
 
   //
   // Install protocol interface
   //
   Status = gBS->InstallProtocolInterface (
-                  NULL,
+                  &Handle,
                   &gJsonParserProtocolGuid,
                   EFI_NATIVE_INTERFACE,
                   &pJsonProtocol
                   );
 
+  ASSERT_EFI_ERROR (Status);
 
   return Status;
 }

@@ -20,6 +20,7 @@
 #define     TITLE_BANNER    L"Dell JSON Utility version 0.01\n"
 
 
+
 // Initialization for the VALIDOPTIONS structure array
 #define VALID_OPTIONS_DATA {                    \
                     {L"-h", DISPLAYHELP},       \

@@ -9,26 +9,23 @@
 // Include Files
 //-----------------------------------------------------------------------------
 #include <Uefi/UefiSpec.h>
-#include <Protocol/FirmwareManagement.h>
 #include <Library/UefiLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Protocol/DevicePath.h>
 #include <Protocol/SimpleFileSystem.h>
-#include <Protocol/LoadedImage.h>
 #include <Library/ShellLib.h>
 #include <Protocol/EfiShellParameters.h>
 #include <Protocol/EfiShellInterface.h>
+#include <Protocol/JsonParser.h>
 #include <Guid/DellBios.h>
 #include <Library/DellShellLib.h>
-#include <EfiFlash.h>
+#include <JsonParserTest.h>
 
 //-----------------------------------------------------------------------------
 // Global Variables
 //-----------------------------------------------------------------------------
-UINTN               Column, Row;
-//UINTN               Callbacks;
 EFI_SYSTEM_TABLE   *mSystemTable;
 
 //-----------------------------------------------------------------------------
@@ -76,6 +73,7 @@ PrintUsage(
   @return Values from ShellCommandLineParse.
 
 **/
+#if 0
 EFI_STATUS
 HandleInputParameters (
   IN OUT    PROGRAM_OPTIONS_UNION *ProgramOptionsPtr,
@@ -129,7 +127,7 @@ HandleInputParameters (
     return Status;
 }
 
-
+#endif
 
 
 /**
@@ -151,10 +149,10 @@ HandleInputParameters (
 
 **/
 EFI_STATUS
-GetNewBiosImage (
+OpenJsonFile (
   IN    EFI_HANDLE      ImageHandle,
   IN    CHAR16          *FName,
-  IN OUT VOID           **FirmwareImageBuffer,
+  IN OUT VOID           **FileBuffer,
   OUT   UINTN           *FSize
 )
 {
@@ -162,7 +160,7 @@ GetNewBiosImage (
     EFI_FILE_HANDLE     FileHandle  = NULL;
 
 
-    // Open the source BIOS file.
+    // Open the source file.
     Status = ShellOpenFileByName(FName, &FileHandle, EFI_FILE_MODE_READ, 0);
     if ( EFI_ERROR(Status) )    {
         Print(L"Error:  Can not open %s\n", FName);
@@ -172,7 +170,7 @@ GetNewBiosImage (
         DebugPrint((L"Success opening %s\n", FName));
     }
 
-    // Get the size of the BIOS size.  It must be the same size as the current
+    // Get the size of the file.  It must be the same size as the current
     // size returned from the Firmware Management Protocol plus the RBU header.
     Status = ShellGetFileSize(FileHandle, (UINT64*) FSize);
     if ( EFI_ERROR(Status) )    {
@@ -187,19 +185,19 @@ GetNewBiosImage (
     Status = gST->BootServices->AllocatePool(
                                     EfiLoaderData,
                                     *FSize,
-                                    FirmwareImageBuffer
+                                    FileBuffer
                                     );
 
-    if (*FirmwareImageBuffer == NULL) {
-        Print(L" **FAIL: Error allocating a buffer for the image file %s.\n", FName);
+    if (*FileBuffer == NULL) {
+        Print(L" **FAIL: Error allocating a buffer for this JSON file %s.\n", FName);
         return Status;
     }
 
-    // Load BIOS.HDR into the allocated memory.
-    Status = ShellReadFile(FileHandle, FSize, *FirmwareImageBuffer);
+    // Load file into the allocated memory.
+    Status = ShellReadFile(FileHandle, FSize, *FileBuffer);
 
     if (EFI_ERROR(Status)) {
-        Print(L" **FAIL: Error reading the image file %s.\n", FName);
+        Print(L" **FAIL: Error reading the file %s.\n", FName);
         return Status;
     }
 
@@ -207,10 +205,10 @@ GetNewBiosImage (
     if ( FileHandle)    {
         Status = ShellCloseFile(&FileHandle);
         if (EFI_ERROR(Status)) {
-            Print(L" **FAIL: Cannot close the firmware image file %s.\n", FName);
+            Print(L" **FAIL: Cannot close this file %s.\n", FName);
             return Status;
         }
-        DebugPrint((L"   INFO: %X bytes of %s read into memory at %X\n\n", *FSize, FName, *FirmwareImageBuffer));
+        DebugPrint((L"   INFO: %X bytes of %s read into memory at %X\n\n", *FSize, FName, *FileBuffer));
     }
 
     return  Status;
@@ -239,31 +237,86 @@ EfiJsonTestAppEntry (
   IN EFI_SYSTEM_TABLE   *SystemTable
   )
 {
-  EFI_STATUS                          Status;
- 
+  EFI_STATUS          Status;
+  CHAR8               *FileBuffer = NULL; 
+  const CHAR8               *ArrayString = NULL;
+  CHAR16              *FName = NULL;
+  CHAR16              **Argv = NULL;
+  JSON_PARSER_PROTOCOL *pJson;
+  UINTN               FSize  = 0;    // Size of the new file.
+  JSON_Value          *JsonValue;
+  JSON_Object         *Object;
+  JSON_Array          *ComponentAry;
+  UINT64               Index;
+    UINTN               Argc = 0;
+
+
   mSystemTable = SystemTable;
 
   // Print the utitlity name and version as defined in EfiFlash.h
   Print(TITLE_BANNER);
-
-//<= JFDDebug Start  4/20/2010   10:17:39AM
-//     CpuDeadLoop();
-////=> JFDDebug End  4/20/2010   10:17:39AM
+//Price debug++
+     CpuDeadLoop();
+//
 
     // Get the input parameters into ProgramOptions.
+#if 0
     if ((Status = HandleInputParameters(&ProgramOptions, &Argv, ImageHandle)) != EFI_SUCCESS)  {
         return Status;
     }
+#else
 
-    DebugPrint((L"ProgramOptions = %0.8x\n", ProgramOptions.iProgramOptions));
+    // Get the command line arguments in the C style Argv and Argc.
+    Status = GetArgvArgc(ImageHandle, gST, &Argv, &Argc);
+    if (EFI_ERROR (Status)) {
+        return Status;
+    }
 
-    // The name of the BIOS .hdr file must be the first argument in the command line.
+    // Display usage if no parameters passed.
+    if (Argc <= 1) {
+        PrintUsage();
+        return EFI_INVALID_PARAMETER;
+    }
+#endif
+//    DebugPrint((L"ProgramOptions = %0.8x\n", ProgramOptions.iProgramOptions));
+
+
+    // The name of file must be the first argument in the command line.
     FName = Argv[1];
-
     DebugPrint((L"JSON file name:  %s\n", FName));
 
-    Status = 
 
+    // Open JSON file and put to buffer...
+    Status = OpenJsonFile(ImageHandle, FName, &FileBuffer, &FSize);
+    if (EFI_ERROR(Status)) {
+        Print(L"**FAIL: Unable to load %s into buffer.\n",FName);
+        return Status;;
+    }
+    DebugPrint((L"File loaded at %X\n", FileBuffer));
+
+    Status = gST->BootServices->LocateProtocol (
+                                &gJsonParserProtocolGuid,
+                                NULL,
+                                &pJson
+                                );
+
+    if (EFI_ERROR(Status)) {
+        Print(L"**FAIL: Can't to locate JSON parser protocol.\n");
+        return Status;;
+    }
+//    pJson->
+  JsonValue = pJson->json_parse_string_with_comments (FileBuffer);
+  Object = pJson->json_value_get_object (JsonValue);
+
+  ComponentAry = pJson->json_object_get_array(Object, "Component");
+
+  for (Index = 0; Index < pJson->json_array_get_count (ComponentAry); Index++) {
+    ArrayString =  pJson->json_array_get_string(ComponentAry, Index);
+//    DebugPrint (("Component [%d] = %c \n", Index, ArrayString));
+    Print(L"Component [%d] = %c \n", Index, ArrayString);
+  }
+
+  pJson->json_value_free(JsonValue);
 
   return Status;
 }
