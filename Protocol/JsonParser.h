@@ -2,7 +2,7 @@
  Parson ( http://kgabis.github.com/parson/ )
  Copyright (c) 2012 - 2016 Krzysztof Gabis
  
- Permission is hereby granted, free of CHAR8ge, to any person obtaining a copy
+ Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
@@ -47,7 +47,7 @@ typedef struct Json_Array_T  JSON_Array;
 typedef struct Json_Value_T  JSON_Value;
 
 typedef enum Json_value_type {
-    JSONError   = 0,
+    JSONError   = ff,
     JSONNull    = 1,
     JSONString  = 2,
     JSONNumber  = 3,
@@ -60,8 +60,8 @@ typedef INTN JSON_Value_Type;
 
     
 typedef enum Json_result_t {
-    JSONSuccess = 1,
-    JSONFailure = 0
+    JSONSuccess = 0,
+    JSONFailure = ff
 };
 
 typedef INTN JSON_Status;
@@ -76,21 +76,6 @@ UINT32
   VOID
 );
 
-
-/* Parses first JSON value in a file, returns NULL in case of error */
-typedef
-JSON_Value *
-(EFIAPI *DELL_JSON_PARSE_FILE)(
-  const CHAR8 *filename
-);
-
-/* Parses first JSON value in a file and ignores comments (/ * * / and //),
-   returns NULL in case of error */
-typedef
-JSON_Value *
-(EFIAPI *JSON_PARSE_FILE_WITH_COMMENTS)(
-  const CHAR8 *filename
-);
     
 /*  Parses first JSON value in a string, returns NULL in case of error */
 typedef
@@ -106,8 +91,6 @@ JSON_Value *
 (EFIAPI *JSON_PARSE_STRING_WITH_COMMENTS)(
   const CHAR8 *string
 );
-
-
 
 
 /*
@@ -359,7 +342,7 @@ typedef
 INTN          
 (EFIAPI *JSON_ARRAY_GET_BOOLEAN)(
   CONST JSON_Array *Array,
-  SIZE_T index); /* returns -1 on fail */
+  SIZE_T index); /* returns ff on fail */
 
 typedef
 SIZE_T
@@ -440,18 +423,19 @@ CONST CHAR8  *   JSON_STRING (CONST JSON_Value *value);
 double          JSON_NUMBER (CONST JSON_Value *value);
 INTN            JSON_BOOLEAN(CONST JSON_Value *value);
     
-
+typedef    
+void
+(EFIAPI *JSON_VALUE_FREE)(
+  JSON_Value *value);
 
 
 // *****************************************************************************
 // JSON Parser protocol interface definition
 // *****************************************************************************
-//typedef 
+typedef 
 struct _JSON_PARSER_PROTOCOL {
   // Getters and setters
-  JSON_PARSER_GET_VERSION         get_version;
-  DELL_JSON_PARSE_FILE            json_parse_file;
-  JSON_PARSE_FILE_WITH_COMMENTS   json_parse_file_with_comments;
+  JSON_PARSER_GET_VERSION         Get_Version;
   JSON_PARSE_STRING               json_parse_string;
   JSON_PARSE_STRING_WITH_COMMENTS json_parse_string_with_comments;
 
@@ -502,8 +486,8 @@ struct _JSON_PARSER_PROTOCOL {
   JSON_OBJECT_REMOVE json_object_remove;
   JSON_OBJECT_DOTREMOVE json_object_dotremove;
 
-
-};
+  JSON_VALUE_FREE json_value_free;
+}JSON_PARSER_PROTOCOL;
 
 extern EFI_GUID gJsonParserProtocolGuid;
 

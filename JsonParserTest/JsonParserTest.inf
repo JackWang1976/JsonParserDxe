@@ -8,8 +8,8 @@
 ##
 
 [defines]
-  INF_VERSION                    = 0x00010006
-  BASE_NAME                      = EfiJsonTest
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = JsonParserTest
   FILE_GUID                      = 081C1110-835C-4C27-BEC1-5050E2A9127D
   MODULE_TYPE                    = UEFI_APPLICATION
   VERSION_STRING                 = 1.0

@@ -15,7 +15,28 @@
 #include <Library/DebugLib.h>
 
 
-//#include <math.h>
+// *****************************************************************************
+// private definitions and data structures
+// *****************************************************************************
+
+#define JSON_PARSER_DRIVER_VERSION 0x01000000
+
+#define JSON_PARSER_PRIVATE_SIGNATURE SIGNATURE_32 ('J', 'S', 'O', 'N')
+
+#define JOSN_PARSER_PRIVATE_FROM_THIS(a) \
+            CR(a, JSON_PARSER_PRIVATE_DATA, \
+                Json, \
+                JSON_PARSER_PRIVATE_SIGNATURE)
+
+
+/// @brief Private data managed by the iDRAC Inventory PCI Driver.
+typedef struct {
+  UINTN                     Signature;
+  UINT32                    Version;
+  EFI_HANDLE                DriverHandle;
+  JSON_PARSER_PROTOCOL      Json;
+} JSON_PARSER_PRIVATE_DATA;
+
 
 
 typedef union

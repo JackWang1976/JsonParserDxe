@@ -417,7 +417,7 @@ static JSON_Status json_object_resize(JSON_Object *object, SIZE_T new_capacity) 
     
     temp_values = (JSON_Value**)parson_malloc(new_capacity * sizeof(JSON_Value*));
     if (temp_values == NULL) {
-        parson_free(temp_names);
+        parson_free(temp_values);
         return JSONFailure;
     }
     
@@ -1881,11 +1881,10 @@ JsonParserEntryPoint (
   )
 {
   EFI_STATUS         Status = EFI_SUCCESS;
-  EFI_HANDLE         Handle = NULL;
-  JSON_PARSER_PROTOCOL   pJsonProtocol;
+//  EFI_HANDLE         Handle = NULL;
 
 //Price debug++
-  CpuDeadLoop();
+//  CpuDeadLoop();
 //price debug--
 
   //
@@ -1893,74 +1892,85 @@ JsonParserEntryPoint (
   //
   ASSERT_PROTOCOL_ALREADY_INSTALLED (NULL, &gJsonParserProtocolGuid);
 
+  PrivateData.Signature    = JSON_PARSER_PRIVATE_SIGNATURE;
+  PrivateData.Version      = JSON_PARSER_DRIVER_VERSION;
+
+  PrivateData.DriverHandle = NULL;
+
   //
   // Initialize the interfaces.
   //
-  pJsonProtocol.get_version = GetVersion;
-//  pJsonProtocol.json_parse_file = json_parse_file;
-//  pJsonProtocol.json_parse_file_with_comments = json_parse_file_with_comments;
-  pJsonProtocol.json_parse_string = json_parse_string;
-  pJsonProtocol.json_parse_string_with_comments = json_parse_string_with_comments;
+  PrivateData.Json.Get_Version = GetVersion;
+
+  PrivateData.Json.json_parse_string = json_parse_string;
+  PrivateData.Json.json_parse_string_with_comments = json_parse_string_with_comments;
 
 
-  pJsonProtocol.json_object_get_value = json_object_get_value;
-  pJsonProtocol.json_object_get_string = json_object_get_string;
-  pJsonProtocol.json_object_get_object = json_object_get_object;
-  pJsonProtocol.json_object_get_array = json_object_get_array;
-  pJsonProtocol.json_object_get_number = json_object_get_number;
-  pJsonProtocol.json_object_get_boolean = json_object_get_boolean;
+  PrivateData.Json.json_object_get_value = json_object_get_value;
+  PrivateData.Json.json_object_get_string = json_object_get_string;
+  PrivateData.Json.json_object_get_object = json_object_get_object;
+  PrivateData.Json.json_object_get_array = json_object_get_array;
+  PrivateData.Json.json_object_get_number = json_object_get_number;
+  PrivateData.Json.json_object_get_boolean = json_object_get_boolean;
 
-  pJsonProtocol.json_object_dotget_value = json_object_dotget_value;
-  pJsonProtocol.json_object_dotget_string = json_object_dotget_string;
-  pJsonProtocol.json_object_dotget_object = json_object_dotget_object;
-  pJsonProtocol.json_object_dotget_array = json_object_dotget_array;
-  pJsonProtocol.json_object_dotget_number = json_object_dotget_number;
-  pJsonProtocol.json_object_dotget_boolean = json_object_dotget_boolean;
+  PrivateData.Json.json_object_dotget_value = json_object_dotget_value;
+  PrivateData.Json.json_object_dotget_string = json_object_dotget_string;
+  PrivateData.Json.json_object_dotget_object = json_object_dotget_object;
+  PrivateData.Json.json_object_dotget_array = json_object_dotget_array;
+  PrivateData.Json.json_object_dotget_number = json_object_dotget_number;
+  PrivateData.Json.json_object_dotget_boolean = json_object_dotget_boolean;
 
-  pJsonProtocol.json_object_get_count = json_object_get_count;
-  pJsonProtocol.json_object_get_name = json_object_get_name;
+  PrivateData.Json.json_object_get_count = json_object_get_count;
+  PrivateData.Json.json_object_get_name = json_object_get_name;
 
-  pJsonProtocol.json_array_get_value = json_array_get_value;
-  pJsonProtocol.json_array_get_string = json_array_get_string;
-  pJsonProtocol.json_array_get_object = json_array_get_object;
-  pJsonProtocol.json_array_get_array = json_array_get_array;
-  pJsonProtocol.json_array_get_number = json_array_get_number;
-  pJsonProtocol.json_array_get_boolean = json_array_get_boolean;
-  pJsonProtocol.json_array_get_count = json_array_get_count;
+  PrivateData.Json.json_array_get_value = json_array_get_value;
+  PrivateData.Json.json_array_get_string = json_array_get_string;
+  PrivateData.Json.json_array_get_object = json_array_get_object;
+  PrivateData.Json.json_array_get_array = json_array_get_array;
+  PrivateData.Json.json_array_get_number = json_array_get_number;
+  PrivateData.Json.json_array_get_boolean = json_array_get_boolean;
+  PrivateData.Json.json_array_get_count = json_array_get_count;
 
-  pJsonProtocol.json_value_get_type = json_value_get_type;
-  pJsonProtocol.json_value_get_object = json_value_get_object;
-  pJsonProtocol.json_value_get_array = json_value_get_array;
-  pJsonProtocol.json_value_get_string = json_value_get_string;
-  pJsonProtocol.json_value_get_number = json_value_get_number;
-  pJsonProtocol.json_value_get_boolean = json_value_get_boolean;
+  PrivateData.Json.json_value_get_type = json_value_get_type;
+  PrivateData.Json.json_value_get_object = json_value_get_object;
+  PrivateData.Json.json_value_get_array = json_value_get_array;
+  PrivateData.Json.json_value_get_string = json_value_get_string;
+  PrivateData.Json.json_value_get_number = json_value_get_number;
+  PrivateData.Json.json_value_get_boolean = json_value_get_boolean;
   
-  pJsonProtocol.json_object_set_value = json_object_set_value;
-  pJsonProtocol.json_object_set_string = json_object_set_string;
-  pJsonProtocol.json_object_set_number = json_object_set_number;
-  pJsonProtocol.json_object_set_boolean = json_object_set_boolean;
-  pJsonProtocol.json_object_set_null = json_object_set_null;
+  PrivateData.Json.json_object_set_value = json_object_set_value;
+  PrivateData.Json.json_object_set_string = json_object_set_string;
+  PrivateData.Json.json_object_set_number = json_object_set_number;
+  PrivateData.Json.json_object_set_boolean = json_object_set_boolean;
+  PrivateData.Json.json_object_set_null = json_object_set_null;
 
-  pJsonProtocol.json_object_dotset_value = json_object_dotset_value;
-  pJsonProtocol.json_object_dotset_string = json_object_dotset_string;
-  pJsonProtocol.json_object_dotset_number = json_object_dotset_number;
-  pJsonProtocol.json_object_dotset_boolean = json_object_dotset_boolean;
-  pJsonProtocol.json_object_dotset_null = json_object_dotset_null;
+  PrivateData.Json.json_object_dotset_value = json_object_dotset_value;
+  PrivateData.Json.json_object_dotset_string = json_object_dotset_string;
+  PrivateData.Json.json_object_dotset_number = json_object_dotset_number;
+  PrivateData.Json.json_object_dotset_boolean = json_object_dotset_boolean;
+  PrivateData.Json.json_object_dotset_null = json_object_dotset_null;
   
-  pJsonProtocol.json_object_remove = json_object_remove;
-  pJsonProtocol.json_object_dotremove = json_object_dotremove;
+  PrivateData.Json.json_object_remove = json_object_remove;
+  PrivateData.Json.json_object_dotremove = json_object_dotremove;
 
-  pJsonProtocol.json_value_free = json_value_free;
+  PrivateData.Json.json_value_free = json_value_free;
 
   //
   // Install protocol interface
   //
-  Status = gBS->InstallProtocolInterface (
-                  &Handle,
+//Status = gBS->InstallProtocolInterface (
+//                &Handle,
+//                &gJsonParserProtocolGuid,
+//                EFI_NATIVE_INTERFACE,
+//                &pJsonProtocol
+//                );
+
+  Status = gBS->InstallMultipleProtocolInterfaces(
+                  &(PrivateData.DriverHandle), 
                   &gJsonParserProtocolGuid,
-                  EFI_NATIVE_INTERFACE,
-                  &pJsonProtocol
-                  );
+                  &(PrivateData.Json),
+                  NULL);
+
 
   ASSERT_EFI_ERROR (Status);
 

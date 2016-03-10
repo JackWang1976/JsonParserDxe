@@ -247,8 +247,8 @@ EfiJsonTestAppEntry (
   JSON_Value          *JsonValue;
   JSON_Object         *Object;
   JSON_Array          *ComponentAry;
-  UINT64               Index;
-    UINTN               Argc = 0;
+  UINT64              Index;
+  UINTN               Argc = 0;
 
 
   mSystemTable = SystemTable;
@@ -281,42 +281,46 @@ EfiJsonTestAppEntry (
 //    DebugPrint((L"ProgramOptions = %0.8x\n", ProgramOptions.iProgramOptions));
 
 
-    // The name of file must be the first argument in the command line.
-    FName = Argv[1];
-    DebugPrint((L"JSON file name:  %s\n", FName));
+  // The name of file must be the first argument in the command line.
+  FName = Argv[1];
+  DebugPrint((L"JSON file name:  %s\n", FName));
 
 
-    // Open JSON file and put to buffer...
-    Status = OpenJsonFile(ImageHandle, FName, &FileBuffer, &FSize);
-    if (EFI_ERROR(Status)) {
-        Print(L"**FAIL: Unable to load %s into buffer.\n",FName);
-        return Status;;
-    }
-    DebugPrint((L"File loaded at %X\n", FileBuffer));
+  // Open JSON file and put to buffer...
+  Status = OpenJsonFile(ImageHandle, FName, &FileBuffer, &FSize);
+  if (EFI_ERROR(Status)) {
+      Print(L"**FAIL: Unable to load %s into buffer.\n",FName);
+      return Status;;
+  }
+  DebugPrint((L"File loaded at %X\n", FileBuffer));
 
-    Status = gST->BootServices->LocateProtocol (
-                                &gJsonParserProtocolGuid,
-                                NULL,
-                                &pJson
-                                );
+  Status = gST->BootServices->LocateProtocol (
+                              &gJsonParserProtocolGuid,
+                              NULL,
+                              &pJson
+                              );
 
-    if (EFI_ERROR(Status)) {
-        Print(L"**FAIL: Can't to locate JSON parser protocol.\n");
-        return Status;;
-    }
-//    pJson->
-  JsonValue = pJson->json_parse_string_with_comments (FileBuffer);
-  Object = pJson->json_value_get_object (JsonValue);
-
-  ComponentAry = pJson->json_object_get_array(Object, "Component");
-
-  for (Index = 0; Index < pJson->json_array_get_count (ComponentAry); Index++) {
-    ArrayString =  pJson->json_array_get_string(ComponentAry, Index);
-//    DebugPrint (("Component [%d] = %c \n", Index, ArrayString));
-    Print(L"Component [%d] = %c \n", Index, ArrayString);
+  if (EFI_ERROR(Status) || pJson->Get_Version() == 0 ) {
+      Print(L"**FAIL: Can't to locate JSON parser protocol successful.\n");
+      return Status;;
   }
 
-  pJson->json_value_free(JsonValue);
+
+//    pJson->
+  JsonValue = pJson->json_parse_string(FileBuffer);
+  if (JsonValue != 0) {
+    Object = pJson->json_value_get_object(JsonValue);
+
+    ComponentAry = pJson->json_object_get_array(Object, "Component");
+
+    for (Index = 0; Index < pJson->json_array_get_count (ComponentAry); Index++) {
+      ArrayString =  pJson->json_array_get_string(ComponentAry, Index);
+  //    DebugPrint (("Component [%d] = %c \n", Index, ArrayString));
+      Print(L"Component [%d] = %c \n", Index, ArrayString);
+    }
+
+    pJson->json_value_free(JsonValue);
+  }
 
   return Status;
 }
