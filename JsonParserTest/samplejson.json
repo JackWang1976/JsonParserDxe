@@ -1,0 +1,56 @@
+{
+
+"SystemConfiguration": {
+        "TimeStamp":"Wed Apr 30 12:26:52 2014",
+        "ServiceTag":"6F7V3Y1",
+        "Model": "PowerEdge M620",
+        "!--Comment": "Exported configuration does not contain FC-HBA data as the presence of the appropriate cards could not be detected!",
+        "Component1": {
+                "FQDD": "LifecycleController.Embedded.1",
+                "Attribute": { 
+                        "Name": "LCAttributes.1#CollectSystemInventoryOnRestart",
+                        "Value": "Disabled",
+                        "Set On Import": "true",
+                        "Always Read Only": "false"
+                },
+        },
+
+        "Component2": {
+                "FQDD": "RAID.Integrated.1-1",
+                "Attribute": { 
+                        "Name": "RAIDresetConfig",
+                        "Value": "False",
+                        "Set On Import": "true",
+                        "Always Read Only": "false"
+                },
+                "Component1": {
+                        "FQDD": "Disk.Virtual.0:RAID.Integrated.1-1",
+                        "Attribute": { 
+                                "Name": "RAIDaction",
+                                "Value": "Update",
+                                "Set On Import": "true",
+                                "Always Read Only": "false"
+                        },
+
+                        "Attribute": { 
+                                "Name": "Name",
+                                "Value": "Virtual disk 0",
+                                "Set On Import": "false",
+                                "Always Read Only": "false"
+                        },
+                },
+                "Component2": {
+                        "FQDD": "Enclosure.Internal.0-1:RAID.Integrated.1-1",
+                        "Component": {
+                                "FQDD": "Disk.Bay.0:Enclosure.Internal.0-1:RAID.Integrated.1-1",
+                                "Attribute": { 
+                                        "Name": "RAIDHotSpareStatus",
+                                        "Value": "No",
+                                        "Set On Import": "false",
+                                        "Always Read Only": "false"
+                                }
+                        }
+                }                       
+        }
+}
+}

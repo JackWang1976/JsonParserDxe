@@ -308,6 +308,9 @@ EfiJsonTestAppEntry (
 
 //    pJson->
   JsonValue = pJson->json_parse_string(FileBuffer);
+  if (JsonValue == NULL) {
+      Print(L"JsonValue = NULL \n");
+  }
   if (JsonValue != 0) {
     Object = pJson->json_value_get_object(JsonValue);
 
@@ -320,6 +323,10 @@ EfiJsonTestAppEntry (
     }
 
     pJson->json_value_free(JsonValue);
+  }
+
+  if (FileBuffer != NULL) {
+    FreePool(FileBuffer);
   }
 
   return Status;

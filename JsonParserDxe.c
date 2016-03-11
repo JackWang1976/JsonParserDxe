@@ -40,7 +40,7 @@
 #define SKIP_WHITESPACES(str) while (isspace(**str)) { SKIP_CHAR(str); }
 //define in base.h #define MAX(a, b)             ((a) > (b) ? (a) : (b))
 
-
+JSON_PARSER_PRIVATE_DATA PrivateData = {0};
 
 
 static JSON_Malloc_Function parson_malloc = malloc;
@@ -391,6 +391,9 @@ static JSON_Status json_object_add(JSON_Object *object, const CHAR8 *name, JSON_
             return JSONFailure;
     }
     if (json_object_get_value(object, name) != NULL)
+        // Price debug++ //BIOS found same name at same level.
+        //print(L"Object %s - duplicate", name);//
+        //------
         return JSONFailure;
     index = object->count;
     object->names[index] = parson_strdup(name);
@@ -663,6 +666,9 @@ static JSON_Value * parse_object_value(const CHAR8 **string, SIZE_T nesting) {
     JSON_Value *output_value = json_value_init_object(), *new_value = NULL;
     JSON_Object *output_object = json_value_get_object(output_value);
     CHAR8 *new_key = NULL;
+    //Price debug++
+    //UINT8 i;
+    //Price debug--
     if (output_value == NULL)
         return NULL;
     SKIP_CHAR(string);
@@ -693,11 +699,22 @@ static JSON_Value * parse_object_value(const CHAR8 **string, SIZE_T nesting) {
         }
         parson_free(new_key);
         SKIP_WHITESPACES(string);
-        if (**string != ',')
+        
+        //Price debug++ if (**string != ',')
+            if (**string != ',' && **string != '}')
             break;
         SKIP_CHAR(string);
         SKIP_WHITESPACES(string);
     }
+    //Price debug++
+//  if (**string != '\0'){
+//     print(L"String Address:0x%x \n", *string);//
+//
+//     for (i=0; i<10; i++) {
+//        print(L"Data=%c ", **string + i);//
+//     }
+//    //
+//  }
     SKIP_WHITESPACES(string);
     if (**string != '}' || /* Trim object after parsing is over */
         json_object_resize(output_object, json_object_get_count(output_object)) == JSONFailure) {
