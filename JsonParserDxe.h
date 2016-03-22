@@ -121,7 +121,16 @@ UINTN EFIAPI AsciiStringLength (IN CONST CHAR8 *String)
 #define strncmp                AsciiStrnCmp
 
 #define FILE                   EFI_FILE  
-//#define double                 INTN
+//_Dell_ didn;t suppport double in EFI 
+//_Dell_ #define DOUBLE_SERIALIZATION_FORMAT "%f"
+//INTN _fltused;
+
+
+#define SIZEOF_TOKEN(a)       (sizeof(a) - 1)
+#define SKIP_CHAR(str)        ((*str)++)
+#define SKIP_WHITESPACES(str) while (isspace(**str)) { SKIP_CHAR(str); }
+//define in base.h #define MAX(a, b)             ((a) > (b) ? (a) : (b))
+#define IS_CONT(b) (((UINT8)(b) & 0xC0) == 0x80) /* is utf-8 continuation byte */
 
 
 
@@ -131,10 +140,10 @@ void json_set_allocation_functions(JSON_Malloc_Function malloc_fun, JSON_Free_Fu
     
 ///* Parses first JSON value in a file, returns NULL in case of error */
 //JSON_Value * json_parse_file(const CHAR8*filename);
-JSON_Value * 
-json_parse_file( 
-  const CHAR8 *filename
-  );
+//JSON_Value *
+//json_parse_file(
+//  const CHAR8 *filename
+//  );
 
 //
 ///* Parses first JSON value in a file and ignores comments (/ * * / and //),

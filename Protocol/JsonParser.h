@@ -31,8 +31,6 @@
 #define JSON_PARSER_PROTOCOL_GUID \
 { 0x462C5BBA, 0x2F3D, 0x4BDD, { 0xBC, 0x37, 0x6A, 0x1A, 0xED, 0x3D, 0xDE, 0x79 }}
 
-//extern EFI_GUID gJsonParserProtocolGuid;
-
 
 // *****************************************************************************
 // Related Definitions - Public defines, typedefs and structs
@@ -42,12 +40,44 @@ typedef struct _JSON_PARSER_PROTOCOL JSON_PARSER_PROTOCOL;
     
 /* Types and enums */
 typedef UINT64 SIZE_T;
+typedef INTN JSON_Value_Type;
+typedef INTN JSON_Status;
+
 typedef struct Json_Object_T JSON_Object;
 typedef struct Json_Array_T  JSON_Array;
 typedef struct Json_Value_T  JSON_Value;
 
+
+/* Type definitions */
+typedef union Json_Value_Value {
+    CHAR8        *string;
+    INTN       number;
+    JSON_Object *object;
+    JSON_Array  *array;
+    INTN          boolean;
+    INTN          null;
+} JSON_Value_Value;
+
+struct Json_Value_T {
+    JSON_Value_Type     type;
+    JSON_Value_Value    value;
+};
+
+struct Json_Object_T {
+    CHAR8       **names;
+    JSON_Value **values;
+    SIZE_T       count;
+    SIZE_T       capacity;
+};
+
+struct Json_Array_T {
+    JSON_Value **items;
+    SIZE_T       count;
+    SIZE_T       capacity;
+};
+
 typedef enum Json_value_type {
-    JSONError   = ff,
+    JSONError   = 0xff,
     JSONNull    = 1,
     JSONString  = 2,
     JSONNumber  = 3,
@@ -56,15 +86,12 @@ typedef enum Json_value_type {
     JSONBoolean = 6
 };
 
-typedef INTN JSON_Value_Type;
-
     
 typedef enum Json_result_t {
     JSONSuccess = 0,
-    JSONFailure = ff
+    JSONFailure = 0xff
 };
 
-typedef INTN JSON_Status;
     
 typedef VOID * (*JSON_Malloc_Function)(SIZE_T);
 typedef VOID   (*JSON_Free_Function)(void *);
