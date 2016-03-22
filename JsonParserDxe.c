@@ -22,23 +22,13 @@
 */
 
 #include "JsonParserDxe.h"
-//#include "stdio.h"
-//#include <Guid/FileInfo.h>
 
-
+//#define double                 INTN
 #define STARTING_CAPACITY         15
 #define ARRAY_MAX_CAPACITY    122880 /* 15*(2^13) */
 #define OBJECT_MAX_CAPACITY      960 /* 15*(2^6)  */
 #define MAX_NESTING               19
-//_Dell_ didn;t suppport double in EFI 
-//_Dell_ #define DOUBLE_SERIALIZATION_FORMAT "%f"
-//INTN _fltused;
 
-
-#define SIZEOF_TOKEN(a)       (sizeof(a) - 1)
-#define SKIP_CHAR(str)        ((*str)++)
-#define SKIP_WHITESPACES(str) while (isspace(**str)) { SKIP_CHAR(str); }
-//define in base.h #define MAX(a, b)             ((a) > (b) ? (a) : (b))
 
 JSON_PARSER_PRIVATE_DATA PrivateData = {0};
 
@@ -46,35 +36,6 @@ JSON_PARSER_PRIVATE_DATA PrivateData = {0};
 static JSON_Malloc_Function parson_malloc = malloc;
 static JSON_Free_Function parson_free = free;
 
-#define IS_CONT(b) (((UINT8)(b) & 0xC0) == 0x80) /* is utf-8 continuation byte */
-
-/* Type definitions */
-typedef union Json_Value_Value {
-    CHAR8        *string;
-    INTN       number;
-    JSON_Object *object;
-    JSON_Array  *array;
-    INTN          boolean;
-    INTN          null;
-} JSON_Value_Value;
-
-struct Json_Value_T {
-    JSON_Value_Type     type;
-    JSON_Value_Value    value;
-};
-
-struct Json_Object_T {
-    CHAR8       **names;
-    JSON_Value **values;
-    SIZE_T       count;
-    SIZE_T       capacity;
-};
-
-struct Json_Array_T {
-    JSON_Value **items;
-    SIZE_T       count;
-    SIZE_T       capacity;
-};
 
 /* Various */
 static CHAR8 * read_file(const CHAR8 *filename);
@@ -105,9 +66,9 @@ static JSON_Value * json_value_init_string_no_copy(CHAR8 *string);
 
 /* Parser */
 static void         skip_quotes(const CHAR8 **string);
-static INTN          parse_utf_16(const CHAR8 **unprocessed, CHAR8 **processed);
-static CHAR8 *       process_string(const CHAR8 *input, SIZE_T len);
-static CHAR8 *       get_quoted_string(const CHAR8 **string);
+static INTN         parse_utf_16(const CHAR8 **unprocessed, CHAR8 **processed);
+static CHAR8 *      process_string(const CHAR8 *input, SIZE_T len);
+static CHAR8 *      get_quoted_string(const CHAR8 **string);
 static JSON_Value * parse_object_value(const CHAR8 **string, SIZE_T nesting);
 static JSON_Value * parse_array_value(const CHAR8 **string, SIZE_T nesting);
 static JSON_Value * parse_string_value(const CHAR8 **string);
@@ -386,14 +347,14 @@ static JSON_Status json_object_add(JSON_Object *object, const CHAR8 *name, JSON_
     if (object->count >= object->capacity) {
         SIZE_T new_capacity = MAX(object->capacity * 2, STARTING_CAPACITY);
         if (new_capacity > OBJECT_MAX_CAPACITY)
+            //DEBUG ((DEBUG_INFO, "[JSON]Failure: Over OBJECT_MAX_CAPACITY, capacity=%d.\n", new_capacity));
             return JSONFailure;
         if (json_object_resize(object, new_capacity) == JSONFailure)
             return JSONFailure;
     }
     if (json_object_get_value(object, name) != NULL)
-        // Price debug++ //BIOS found same name at same level.
-        //print(L"Object %s - duplicate", name);//
-        //------
+        //BIOS found same name at same level.
+        //DEBUG ((DEBUG_INFO, "[JSON]Failure: Name-%a.\n", name));
         return JSONFailure;
     index = object->count;
     object->names[index] = parson_strdup(name);
@@ -671,9 +632,6 @@ static JSON_Value * parse_object_value(const CHAR8 **string, SIZE_T nesting) {
     JSON_Value *output_value = json_value_init_object(), *new_value = NULL;
     JSON_Object *output_object = json_value_get_object(output_value);
     CHAR8 *new_key = NULL;
-    //Price debug++
-    //UINT8 i;
-    //Price debug--
     if (output_value == NULL)
         return NULL;
     SKIP_CHAR(string);
@@ -684,6 +642,9 @@ static JSON_Value * parse_object_value(const CHAR8 **string, SIZE_T nesting) {
     }
     while (**string != '\0') {
         new_key = get_quoted_string(string);
+
+        DEBUG ((DEBUG_INFO, "[JSON] Nest=%d, Key=%a \n", nesting ,new_key));
+
         SKIP_WHITESPACES(string);
         if (new_key == NULL || **string != ':') {
             json_value_free(output_value);
@@ -691,12 +652,15 @@ static JSON_Value * parse_object_value(const CHAR8 **string, SIZE_T nesting) {
         }
         SKIP_CHAR(string);
         new_value = parse_value(string, nesting);
+    
         if (new_value == NULL) {
+            DEBUG ((DEBUG_INFO, "[JSON] Nest=%d new_value=null. *string=%p\n", nesting, *string));
             parson_free(new_key);
             json_value_free(output_value);
             return NULL;
         }
         if(json_object_add(output_object, new_key, new_value) == JSONFailure) {
+            DEBUG ((DEBUG_INFO, "[JSON] json_object_add fail\n"));
             parson_free(new_key);
             parson_free(new_value);
             json_value_free(output_value);
@@ -705,22 +669,14 @@ static JSON_Value * parse_object_value(const CHAR8 **string, SIZE_T nesting) {
         parson_free(new_key);
         SKIP_WHITESPACES(string);
         
-        //Price debug++ if (**string != ',')
         if (**string != ',')
-        break;
+            break;
         SKIP_CHAR(string);
         SKIP_WHITESPACES(string);
     }
-    //Price debug++
-//  if (**string != '\0'){
-//     print(L"String Address:0x%x \n", *string);//
-//
-//     for (i=0; i<10; i++) {
-//        print(L"Data=%c ", **string + i);//
-//     }
-//    //
-//  }
+
     SKIP_WHITESPACES(string);
+    
     if (**string != '}' || /* Trim object after parsing is over */
         json_object_resize(output_object, json_object_get_count(output_object)) == JSONFailure) {
             json_value_free(output_value);
@@ -1903,11 +1859,6 @@ JsonParserEntryPoint (
   )
 {
   EFI_STATUS         Status = EFI_SUCCESS;
-//  EFI_HANDLE         Handle = NULL;
-
-//Price debug++
-//  CpuDeadLoop();
-//price debug--
 
   //
   // Make sure the Protocol is already installed in the system
@@ -1980,13 +1931,6 @@ JsonParserEntryPoint (
   //
   // Install protocol interface
   //
-//Status = gBS->InstallProtocolInterface (
-//                &Handle,
-//                &gJsonParserProtocolGuid,
-//                EFI_NATIVE_INTERFACE,
-//                &pJsonProtocol
-//                );
-
   Status = gBS->InstallMultipleProtocolInterfaces(
                   &(PrivateData.DriverHandle), 
                   &gJsonParserProtocolGuid,

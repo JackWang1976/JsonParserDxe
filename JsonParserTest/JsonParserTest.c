@@ -239,17 +239,17 @@ EfiJsonTestAppEntry (
 {
   EFI_STATUS          Status;
   CHAR8               *FileBuffer = NULL; 
-  const CHAR8               *ArrayString = NULL;
   CHAR16              *FName = NULL;
   CHAR16              **Argv = NULL;
   JSON_PARSER_PROTOCOL *pJson;
   UINTN               FSize  = 0;    // Size of the new file.
-  JSON_Value          *JsonValue;
-  JSON_Object         *Object;
-  JSON_Array          *ComponentAry;
+  JSON_Value          *JsonValue, *Value;
+  JSON_Object         *Object = NULL;
+  JSON_Array          *Array = NULL;
+  UINTN               ObjCount = 0;
+  UINTN               ArrayCount = 0;
   UINT64              Index;
   UINTN               Argc = 0;
-
 
   mSystemTable = SystemTable;
 
@@ -305,25 +305,84 @@ EfiJsonTestAppEntry (
       return Status;;
   }
 
-
-//    pJson->
   JsonValue = pJson->json_parse_string(FileBuffer);
   if (JsonValue == NULL) {
       Print(L"JsonValue = NULL \n");
   }
-  if (JsonValue != 0) {
+
+  if ( JsonValue != 0 && JsonValue->type == 4) { //object
     Object = pJson->json_value_get_object(JsonValue);
 
-    ComponentAry = pJson->json_object_get_array(Object, "Component");
+    ObjCount = pJson->json_object_get_count(Object);
+    Print(L"Object Count = %d \n", ObjCount);
+    
+    if (ObjCount != 0) {
+      for (Index = 0; Index < ObjCount; Index++) {
+        Print(L"Object Name: %a,", pJson->json_object_get_name(Object, Index));
+        Value = pJson->json_object_get_value(Object, pJson->json_object_get_name(Object, Index));
+        switch (pJson->json_value_get_type(Value)) {
+          case JSONString:
+            Print(L"Value: %a \n", pJson->json_value_get_string(Value));
+            break;
+          case JSONObject:
+            Object = pJson->json_value_get_object(Value);
 
-    for (Index = 0; Index < pJson->json_array_get_count (ComponentAry); Index++) {
-      ArrayString =  pJson->json_array_get_string(ComponentAry, Index);
-  //    DebugPrint (("Component [%d] = %c \n", Index, ArrayString));
-      Print(L"Component [%d] = %c \n", Index, ArrayString);
-    }
+            ObjCount = pJson->json_object_get_count(Object);
+            Print(L"Object Count = %d \n", ObjCount);
 
+
+            for (Index = 0; Index < ObjCount; Index++) {
+              Print(L"Object Name: %a,", pJson->json_object_get_name(Object, Index));
+              Value = pJson->json_object_get_value(Object, pJson->json_object_get_name(Object, Index));
+              
+              switch (pJson->json_value_get_type(Value)) {
+                case JSONString:
+                  Print(L"Value: %a \n", pJson->json_value_get_string(Value));
+                  break;
+                case JSONObject:
+                  Object = pJson->json_value_get_object(Value);
+
+                  ObjCount = pJson->json_object_get_count(Object);
+                  Print(L"Object Count = %d \n", ObjCount);
+                  break;
+
+                case JSONArray:
+                  Array = pJson->json_value_get_array(Value);
+                  ArrayCount = pJson->json_array_get_count(Array);
+
+                  Print(L"Array Count = %d \n", ArrayCount);
+
+                  break;
+                default:
+                  break;
+
+
+              }
+              
+
+            }
+
+            break;
+
+          case JSONArray:
+
+            break;
+          default:
+            break;
+        } // switch 
+       
+
+      }//for.
+      
+    }    
+    
+  }
+
+
+  if (JsonValue != NULL) {
     pJson->json_value_free(JsonValue);
   }
+
 
   if (FileBuffer != NULL) {
     FreePool(FileBuffer);
