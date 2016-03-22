@@ -35,6 +35,24 @@
 VOID PrintUsage(VOID);
 
 
+EFI_STATUS
+ParserObjectName (
+  JSON_Object Object,
+  UINTN Nesting
+  );
+
+EFI_STATUS
+ParserArrayName (
+  JSON_Array *Array,
+  UINTN Nesting
+  );
+
+EFI_STATUS
+GetValue (
+  JSON_Value *Value,
+  UINTN Nesting
+  );
+
 //----------------------------------------------------------------------------
 //End of Inclusion guard.
 //DO NOT ADD MORE CODE AFTER THIS LINE.
