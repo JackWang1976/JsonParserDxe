@@ -660,6 +660,11 @@ static JSON_Value * parse_value(const CHAR8 **string, SIZE_T nesting) {
         default:
             return NULL;
     }
+   //price debug++
+    if (**string == '}') {
+      SKIP_CHAR();
+    }
+   //price debug--
 }
 
 static JSON_Value * parse_object_value(const CHAR8 **string, SIZE_T nesting) {
@@ -701,8 +706,8 @@ static JSON_Value * parse_object_value(const CHAR8 **string, SIZE_T nesting) {
         SKIP_WHITESPACES(string);
         
         //Price debug++ if (**string != ',')
-            if (**string != ',' && **string != '}')
-            break;
+        if (**string != ',')
+        break;
         SKIP_CHAR(string);
         SKIP_WHITESPACES(string);
     }
